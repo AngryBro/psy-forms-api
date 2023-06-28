@@ -12,6 +12,7 @@ Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
     Route::get("/methodic.get", [MethodicController::class, "get"]);
     Route::get("/methodic.all", [MethodicController::class, "all"]);
     Route::post("/methodic.remove", [MethodicController::class, "remove"]);
+    Route::get("/mydata", [AuthController::class, "myData"]);
 });
 
 Route::post("/password.get", [AuthController::class, "getPassword"]);

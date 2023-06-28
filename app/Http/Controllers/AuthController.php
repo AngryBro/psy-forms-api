@@ -69,4 +69,8 @@ class AuthController extends Controller
         }
         return response()->json(["message" => "invalid password"], 403);
     }
+
+    public function myData(Request $request) {
+        return response()->json(["email" => $request->user->email]);
+    }
 }
