@@ -1,0 +1,5 @@
+@HOST = http://localhost/api
+@TOKEN = Bearer admintoken
+
+GET {{HOST}}/test
+Authorization: {{TOKEN}}

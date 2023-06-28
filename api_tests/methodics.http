@@ -1,0 +1,6 @@
+@HOST = http://localhost/api
+@TOKEN = Bearer admintoken
+
+
+GET {{HOST}}/methodic.all
+Authorization: {{TOKEN}}

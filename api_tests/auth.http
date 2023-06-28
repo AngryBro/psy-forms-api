@@ -1,0 +1,20 @@
+@HOST = http://localhost/api
+@TOKEN = Bearer admintoken
+
+POST {{HOST}}/password.get
+Content-Type: application/json
+
+{
+    "email": "angry.bro.v.2013@gmail.com"
+}
+
+
+###
+POST {{HOST}}/password.verify
+Content-Type: application/json
+
+{
+    "password": "HxsiM",
+    "email": "angry.bro.v.2013@gmail.com"
+}
+
