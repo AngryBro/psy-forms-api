@@ -9,9 +9,9 @@ use App\Mail\Password;
 
 class TestController extends Controller
 {
-    public const METHODIC = "m";
 
     public function test(Request $request) {
-        return response()->json(["message" => BLOCK_TYPE::METHODIC]);
+        $data = $request->validate(["word" => "required|string|min:2"]);
+        return response()->json(["data" => $data["word"]]);
     }
 }

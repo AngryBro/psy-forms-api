@@ -3,3 +3,8 @@
 
 GET {{HOST}}/test
 Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "word": "g"
+}

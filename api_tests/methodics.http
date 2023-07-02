@@ -4,3 +4,25 @@
 
 GET {{HOST}}/methodic.all
 Authorization: {{TOKEN}}
+
+###
+POST {{HOST}}/methodic.save
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id": 1,
+    "private_name": "my name",
+    "public_name": "name",
+    "instruction": "how to do this",
+    "questions": [],
+    "scales": []
+}
+###
+POST {{HOST}}/methodic.remove
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id":1
+}

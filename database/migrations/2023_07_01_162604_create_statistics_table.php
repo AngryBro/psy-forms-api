@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('respondents', function (Blueprint $table) {
+        Schema::create('statistics', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(App\Models\Research::class);
-            $table->integer("number");
-            $table->json("answers");
-            $table->json("scores");
+            $table->foreignIdFOr(App\Models\Criteria::class);
+            $table->json("effect");
+            $table->json("result");
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('respondents');
+        Schema::dropIfExists('statistics');
     }
 };

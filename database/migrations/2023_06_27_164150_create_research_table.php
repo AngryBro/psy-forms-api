@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('researches', function (Blueprint $table) {
             $table->id();
+            $table->string("slug")->unique();
             $table->boolean("published");
             $table->foreignIdFor(App\Models\User::class);
             $table->string("public_name")->nullable();

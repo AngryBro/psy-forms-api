@@ -10,14 +10,14 @@ class MethodicController extends Controller
 {
     public function update(Request $request) {
         $validator = Validator::make($request->all(), [
-            "id" => "required|integer|nullable",
-            "questions" => "required|json",
-            "scales" => "required|json",
-            "public_name" => "required|string|nullable",
-            "private_name" => "required|string|nullable",
-            "instruction" => "required|string|nullable"
+            "id" => "integer|nullable",
+            "questions" => "array",
+            "scales" => "array",
+            "public_name" => "string|nullable",
+            "private_name" => "string|nullable",
+            "instruction" => "string|nullable"
         ]);
-        if($validator->fails()) return response()->json(["message" => "invalid data"], 422);
+        if($validator->fails()) return response()->json(["message" => $validator->errors()], 422);
         $data = $validator->validated();
         $id = $data["id"];
         if($id === null) {
@@ -30,8 +30,8 @@ class MethodicController extends Controller
                 return response()->json(["message" => "not owner"], 403);
             }
         }
-        $methodic->questions = $data["questions"];
-        $methodic->scales = $data["scales"];
+        $methodic->questions = json_encode($data["questions"]);
+        $methodic->scales = json_encode($data["scales"]);
         $methodic->private_name = $data["private_name"];
         $methodic->public_name = $data["public_name"];
         $methodic->instruction = $data["instruction"];

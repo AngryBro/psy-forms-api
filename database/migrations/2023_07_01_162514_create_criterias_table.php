@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('respondents', function (Blueprint $table) {
+        Schema::create('criterias', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\Research::class);
-            $table->integer("number");
-            $table->json("answers");
-            $table->json("scores");
+            $table->string("name");
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('respondents');
+        Schema::dropIfExists('criterias');
     }
 };

@@ -56,6 +56,9 @@ class AuthController extends Controller
             if($correct_pass) {
                 $token = new Token;
                 $token->token = Token::Generate();
+                while(Token::firstWhere("token", $token->token) !== null) {
+                    $token->token = Token::Generate();
+                }
                 $user = User::firstWhere("email", $data["email"]);
                 if($user === null) {
                     $user = new User;
@@ -72,5 +75,13 @@ class AuthController extends Controller
 
     public function myData(Request $request) {
         return response()->json(["email" => $request->user->email]);
+    }
+
+    public function logout(Request $request) {
+        $token = Token::firstWhere("token", $request->bearerToken());
+        if($token !== null) {
+            $token->delete();
+        }
+        return response()->json(["message" => "logout"]);
     }
 }

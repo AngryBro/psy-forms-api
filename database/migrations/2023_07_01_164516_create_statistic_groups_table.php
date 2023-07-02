@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('respondents', function (Blueprint $table) {
+        Schema::create('statistic_groups', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\Research::class);
-            $table->integer("number");
-            $table->json("answers");
-            $table->json("scores");
+            $table->foreignIdFor(App\Models\Statistic::class);
+            $table->foreignIdFor(App\Models\Group::class);
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('respondents');
+        Schema::dropIfExists('statistic_groups');
     }
 };
