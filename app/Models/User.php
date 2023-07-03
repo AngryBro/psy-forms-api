@@ -15,4 +15,8 @@ class User extends Authenticatable
     public function methodics() {
         return $this->hasMany(Methodic::class);
     }
+
+    public function researches() {
+        return $this->hasMany(Research::class);
+    }
 }

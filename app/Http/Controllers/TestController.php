@@ -11,7 +11,8 @@ class TestController extends Controller
 {
 
     public function test(Request $request) {
-        $data = $request->validate(["word" => "required|string|min:2"]);
-        return response()->json(["data" => $data["word"]]);
+        $a = ["one", "two", "three"];
+        unset($a[1]);
+        return response()->json($a);
     }
 }

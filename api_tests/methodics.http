@@ -11,7 +11,7 @@ Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "id": 1,
+    "id": null,
     "private_name": "my name",
     "public_name": "name",
     "instruction": "how to do this",
@@ -24,5 +24,8 @@ Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "id":1
+    "id":24
 }
+###
+GET {{HOST}}/methodic.get?id=13
+Authorization: {{TOKEN}}

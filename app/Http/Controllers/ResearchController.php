@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Research;
 use App\Models\Methodic;
+use Validator;
 
 enum BLOCK_TYPE : string {
     case METHODIC = "m";
@@ -14,7 +15,7 @@ class ResearchController extends Controller
 {
     public function all(Request $request) {
         $researches = $request->user->researches()
-        ->select("id", "private_name", "public_name", "published")
+        ->select("id", "private_name", "public_name", "published", "slug")
         ->latest()
         ->get();
         return response()->json($researches);
@@ -27,44 +28,46 @@ class ResearchController extends Controller
             "instruction" => $methodic->instruction,
             "id" => $methodic->id,
             "type" => BLOCK_TYPE::METHODIC,
-            "questions" => json_decode($methodic->questions, false),
-            "scales" => json_decode($methodic->scales, false)
+            "questions" => json_decode($methodic->questions, true),
+            "scales" => json_decode($methodic->scales, true)
         ];
     }
 
     public function get(Request $request) {
         $validator = Validator::make($request->all(), [
-            "id" => "required|integer"
+            "slug" => "required|string"
         ]);
-        if($validator->fails()) return response()->json(["message" => "invalid id"], 422);
+        if($validator->fails()) return response()->json(["message" => "invalid slug"], 422);
         $data = $validator->validated();
-        $id = $data["id"];
+        $slug = $data["slug"];
         $user_id = $request->user->id;
-        $research = Research::find($id);
+        $research = Research::firstWhere("slug", $slug);
         if($research === null || $research->user_id !== $user_id) {
             return response()->json(["message" => "not owner"], 403);
         }
         if($research->published) {
-            return response()->json(["message" => "research published"], 403);
+            return response()->json(["message" => "research published"], 400);
         }
-        $blocks = json_decode($research->blocks, true)["blocks"];
+        $blocks = json_decode($research->blocks, true);
+        $final_blocks = [];
         foreach($blocks as $i => $block) {
-            if($block["type"] === BLOCK_TYPE::METHODIC) {
+            if($block["type"] === BLOCK_TYPE::METHODIC->value) {
                 $methodic = Methodic::find($block["id"]);
-                if($methodic === null || $methodic->user_id !== $user_id) {
-                    return reponse()->json(["message" => "not methodic owner"], 403);
+                if($methodic === null) {
+                    unset($blocks[$i]);
                 }
-                $methodic_block = $this->methodicBlock($methodic);
-                $blocks[$i] = $methodic_block;
+                elseif($methodic->user_id !== $user_id) {
+                    return response()->json(["message" => "not owner"], 403);
+                }
+                else {
+                    $blocks[$i] = $this->methodicBlock($methodic);
+                }
             }
         }
-        return response()->json([
-            "private_name" => $research->private_name,
-            "public_name" => $research->public_name,
-            "description" => $research->description,
-            "id" => $research->id,
-            "blocks" => $blocks
-        ]);
+        $array = $research->toArray();
+        $blocks = array_values($blocks);
+        $array["blocks"] = $blocks;
+        return response()->json($array);
     }
 
     public function remove(Request $request) {
@@ -84,11 +87,11 @@ class ResearchController extends Controller
 
     public function update(Request $request) {
         $validator = Validator::make($request->all(), [
-            "id" => "integer|required|nullable",
-            "private_name" => "required|string|nullable",
-            "public_name" => "required|string|nullable",
-            "description" => "required|string|nullable",
-            "blocks" => "requred|json"
+            "id" => "integer|nullable",
+            "private_name" => "string|nullable",
+            "public_name" => "string|nullable",
+            "description" => "string|nullable",
+            "blocks" => "array"
         ]);
         if($validator->fails()) return response()->json(["message" => "invalid data"], 422);
         $data = $validator->validated();
@@ -97,6 +100,7 @@ class ResearchController extends Controller
             $research = new Research;
             $research->user_id = $request->user->id;
             $research->published = false;
+            $research->slug = Research::slug();
         }
         else {
             $research = Research::find($id);
@@ -104,14 +108,30 @@ class ResearchController extends Controller
                 return response()->json(["message" => "not owner"], 403);
             }
             if($research->published) {
-                return response()->json(["message" => "cant edit published research"], 403);
+                return response()->json(["message" => "cant edit published research"], 400);
             }
         }
-        foreach(["private_name", "public_name", "description", "blocks"] as $key) {
+        foreach(["private_name", "public_name", "description"] as $key) {
             $research->$key = $data[$key];
         }
+        if($research->private_name === null) {
+            $research->private_name = $research->public_name;
+        }
+        foreach($data["blocks"] as $i => $block) {
+            if($block["type"] === BLOCK_TYPE::METHODIC->value) {
+                $methodic = Methodic::find($block["id"]);
+                if($methodic === null || $methodic->user_id !== $request->user->id) {
+                    return response()->json(["message" => "not methodic owner"], 403);
+                }
+                $data["blocks"][$i] = [
+                    "id" => $block["id"],
+                    "type" => $block["type"]
+                ];
+            }
+        }
+        $research->blocks = json_encode($data["blocks"]);
         $research->save();
-        return response()->json(["id" => $research->id]);
+        return response()->json(["slug" => $research->slug]);
     }
 
     public function publish(Request $request) {
@@ -122,26 +142,55 @@ class ResearchController extends Controller
         $data = $validator->validated();
         $id = $data["id"];
         $research = Research::find($id);
-        if($research === null || $research->user_id !== $request->user->id) {
+        $user_id = $request->user->id;
+        if($research === null || $research->user_id !== $user_id) {
             return response()->json(["message" => "not owner"], 403);
         }
         if($research->published) {
             return response()->json(["message" => "allready published"], 400);
         }
-        $blocks = json_decode($research->blocks, false);
-        foreach($blocks as $i => $block) {
-            if($block["type"] === BLOCK_TYPE::METHODIC) {
+        $blocks = json_decode($research->blocks, true);
+        $baked_blocks = [];
+        foreach($blocks as $block) {
+            if($block["type"] === BLOCK_TYPE::METHODIC->value) {
                 $methodic = Methodic::find($block["id"]);
-                if($methodic === null || $methodic->user_id !== $user_id) {
-                    return reponse()->json(["message" => "not methodic owner"], 403);
+                if($methodic !== null) {
+                    if($methodic->user_id !== $user_id) {
+                        return reponse()->json(["message" => "not methodic owner"], 403);
+                    }
+                    $methodic = $methodic->toArray();
+                    foreach(["questions", "scales"] as $key) {
+                        $methodic[$key] = json_decode($methodic[$key], true);
+                    }
+                    array_push($baked_blocks, $methodic);   
                 }
-                $methodic_block = $this->methodicBlock($methodic);
-                $blocks[$i] = $methodic_block;
+            }
+            else {
+                array_push($baked_blocks, $block);
             }
         }
         $research->published = true;
-        $research->blocks = json_encode($blocks);
+        $research->blocks = json_encode($baked_blocks);
         $research->save();
         return response()->json(["message" => "published"]);
+    }
+
+    public function unpublish(Request $request) {
+        $validator = Validator::make($request->all(), [
+            "slug" => "string|required"
+        ]);
+        if($validator->fails()) return response()->json(["message" => "invalid slug"], 422);
+        $data = $validator->validated();
+        $slug = $data["slug"];
+        $research = Research::firstWhere("slug", $slug);
+        if($research === null || $research->user_id !== $request->user->id) {
+            return response()->json(["message" => "not owner"], 403);
+        }
+        if(!$research->published) {
+            return response()->json(["message" => "not published"], 400);
+        }
+        $research->published = false;
+        $research->save();
+        return response()->json(["message" => "unpublished"]);
     }
 }

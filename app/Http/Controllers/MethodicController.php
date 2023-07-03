@@ -32,7 +32,7 @@ class MethodicController extends Controller
         }
         $methodic->questions = json_encode($data["questions"]);
         $methodic->scales = json_encode($data["scales"]);
-        $methodic->private_name = $data["private_name"];
+        $methodic->private_name = $data["private_name"]===null?$data["public_name"]:$data["private_name"];
         $methodic->public_name = $data["public_name"];
         $methodic->instruction = $data["instruction"];
         $methodic->save();
@@ -58,8 +58,8 @@ class MethodicController extends Controller
             "public_name" => $methodic->public_name,
             "instruction" => $methodic->instruction,
             "id" => $methodic->id,
-            "questions" => json_decode($methodic->questions, false),
-            "scales" => json_decode($methodic->scales, false)
+            "questions" => json_decode($methodic->questions, true),
+            "scales" => json_decode($methodic->scales, true)
         ]);
     }
 

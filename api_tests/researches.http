@@ -1,0 +1,51 @@
+@HOST = http://localhost/api
+@TOKEN = Bearer admintoken
+
+
+GET {{HOST}}/research.all
+Authorization: {{TOKEN}}
+
+###
+POST {{HOST}}/research.save
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id": 10,
+    "private_name": null,
+    "public_name": "my name",
+    "description": "how to do this",
+    "blocks": []
+}
+###
+POST {{HOST}}/research.remove
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id":1
+}
+###
+GET {{HOST}}/research.get
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "slug": "xmbYOmxHhE"
+}
+###
+POST {{HOST}}/research.unpublish
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id": 1
+}
+###
+POST {{HOST}}/research.publish
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id": 1
+}

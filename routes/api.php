@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MethodicController;
+use App\Http\Controllers\ResearchController;
 
 Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
     Route::get("/test", [TestController::class, "test"]);
@@ -12,6 +13,12 @@ Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
     Route::get("/methodic.get", [MethodicController::class, "get"]);
     Route::get("/methodic.all", [MethodicController::class, "all"]);
     Route::post("/methodic.remove", [MethodicController::class, "remove"]);
+    Route::post("/research.save", [ResearchController::class, "update"]);
+    Route::get("/research.get", [ResearchController::class, "get"]);
+    Route::get("/research.all", [ResearchController::class, "all"]);
+    Route::post("/research.remove", [ResearchController::class, "remove"]);
+    Route::post("/research.publish", [ResearchController::class, "publish"]);
+    Route::post("/research.unpublish", [ResearchController::class, "unpublish"]);
     Route::get("/mydata", [AuthController::class, "myData"]);
     Route::post("/logout", [AuthController::class, "logout"]);
 });
