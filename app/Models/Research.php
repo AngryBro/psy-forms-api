@@ -19,4 +19,12 @@ class Research extends Model
         }
         return $slug;
     }
+
+    public static function findBySlug($slug) {
+        return self::firstWhere("slug", $slug);
+    }
+
+    public function respondents() {
+        return $this->hasMany(Respondent::class);
+    }
 }

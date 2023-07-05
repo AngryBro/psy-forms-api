@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignIdFor(App\Models\Research::class);
             $table->integer("number");
             $table->json("answers");
-            $table->json("scores");
             $table->timestamps();
         });
     }

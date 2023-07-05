@@ -1,0 +1,19 @@
+@HOST = http://localhost/api/respondent
+@TOKEN = Bearer admintoken
+
+
+POST {{HOST}}.send
+Content-Type: application/json
+
+{
+    "answers": {"25":{"1":[{"selected":true,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":true,"other":null}],"2":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"3":[{"selected":false,"other":null},{"selected":true,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"4":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"5":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"6":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"7":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"8":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"9":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"10":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"11":[{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":false,"other":null}],"12":[{"selected":true,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":false,"other":null}]},"26":{"1":[{"selected":true,"other":null},{"selected":false,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":false,"other":null},{"selected":false,"other":null},{"selected":true,"other":null},{"selected":true,"other":null},{"selected":false,"other":null},{"selected":true,"other":null},{"selected":false,"other":null}]}},
+    "research_id": 13
+}
+###
+GET {{HOST}}.get
+Content-Type: application/json
+Authorization: {{TOKEN}}
+
+{
+    "research_slug": "PnfW2GCnWu"
+}

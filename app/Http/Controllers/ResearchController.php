@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Research;
 use App\Models\Methodic;
 use Validator;
+use App\Enums\BLOCK_TYPE;
+use App\Models\Respondent;
 
-enum BLOCK_TYPE : string {
-    case METHODIC = "m";
-}
 
 class ResearchController extends Controller
 {
@@ -44,9 +43,6 @@ class ResearchController extends Controller
         $research = Research::firstWhere("slug", $slug);
         if($research === null || $research->user_id !== $user_id) {
             return response()->json(["message" => "not owner"], 403);
-        }
-        if($research->published) {
-            return response()->json(["message" => "research published"], 400);
         }
         $blocks = json_decode($research->blocks, true);
         $final_blocks = [];
@@ -162,6 +158,7 @@ class ResearchController extends Controller
                     foreach(["questions", "scales"] as $key) {
                         $methodic[$key] = json_decode($methodic[$key], true);
                     }
+                    $methodic["type"] = BLOCK_TYPE::METHODIC->value;
                     array_push($baked_blocks, $methodic);   
                 }
             }
@@ -172,6 +169,9 @@ class ResearchController extends Controller
         $research->published = true;
         $research->blocks = json_encode($baked_blocks);
         $research->save();
+        foreach($research->respondents as $respondent) {
+            $respondent->delete();
+        }
         return response()->json(["message" => "published"]);
     }
 
@@ -192,5 +192,37 @@ class ResearchController extends Controller
         $research->published = false;
         $research->save();
         return response()->json(["message" => "unpublished"]);
+    }
+
+    public function respondentGet(Request $request) {
+        $validator = Validator::make($request->all(), [
+            "slug" => "string|required"
+        ]);
+        if($validator->fails()) return response()->json(["message" => "invalid slug"], 422);
+        $data = $validator->validated();
+        $slug = $data["slug"];
+        $research = Research::findBySlug($slug);
+        if($research === null || !$research->published) {
+            return response()->json(["message" => "not found"], 404);
+        }
+        $pages = [];
+        $blocks = json_decode($research->blocks, true);
+        $temp = [];
+        foreach($blocks as $block) {
+            if($block["type"] !== BLOCK_TYPE::METHODIC->value) {
+                array_push($temp, $block);
+            }
+            else {
+                if(count($temp) > 0) {
+                    array_push($pages, $temp);
+                }
+                $temp = [$block];
+            }
+        }
+        array_push($pages, $temp);
+        $research = $research->toArray();
+        unset($research["blocks"]);
+        $research["pages"] = $pages;
+        return response()->json($research);
     }
 }

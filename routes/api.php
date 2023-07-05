@@ -6,9 +6,9 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MethodicController;
 use App\Http\Controllers\ResearchController;
+use App\Http\Controllers\RespondentController;
 
 Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
-    Route::get("/test", [TestController::class, "test"]);
     Route::post("/methodic.save", [MethodicController::class, "update"]);
     Route::get("/methodic.get", [MethodicController::class, "get"]);
     Route::get("/methodic.all", [MethodicController::class, "all"]);
@@ -19,11 +19,15 @@ Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
     Route::post("/research.remove", [ResearchController::class, "remove"]);
     Route::post("/research.publish", [ResearchController::class, "publish"]);
     Route::post("/research.unpublish", [ResearchController::class, "unpublish"]);
+    Route::get("/respondent.get", [RespondentController::class, "get"]);
     Route::get("/mydata", [AuthController::class, "myData"]);
     Route::post("/logout", [AuthController::class, "logout"]);
 });
 
 Route::post("/password.get", [AuthController::class, "getPassword"]);
 Route::post("/password.verify", [AuthController::class, "verifyPassword"]);
+Route::get("/research.respondent.get", [ResearchController::class, "respondentGet"]);
+Route::post("/respondent.send", [RespondentController::class, "send"]);
 
+    Route::get("/test", [TestController::class, "test"]);
 

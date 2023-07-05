@@ -1,12 +1,12 @@
-@HOST = http://localhost/api
+@HOST = http://localhost/api/research
 @TOKEN = Bearer admintoken
 
 
-GET {{HOST}}/research.all
+GET {{HOST}}.all
 Authorization: {{TOKEN}}
 
 ###
-POST {{HOST}}/research.save
+POST {{HOST}}.save
 Authorization: {{TOKEN}}
 Content-Type: application/json
 
@@ -18,7 +18,7 @@ Content-Type: application/json
     "blocks": []
 }
 ###
-POST {{HOST}}/research.remove
+POST {{HOST}}.remove
 Authorization: {{TOKEN}}
 Content-Type: application/json
 
@@ -26,26 +26,28 @@ Content-Type: application/json
     "id":1
 }
 ###
-GET {{HOST}}/research.get
+GET {{HOST}}.get
 Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "slug": "xmbYOmxHhE"
+    "slug": "PnfW2GCnWu"
 }
 ###
-POST {{HOST}}/research.unpublish
+POST {{HOST}}.unpublish
 Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "id": 1
+    "slug": "PnfW2GCnWu"
 }
 ###
-POST {{HOST}}/research.publish
+POST {{HOST}}.publish
 Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "id": 1
+    "id": 13
 }
+###
+GET {{HOST}}.respondent.get?slug=PnfW2GCnWu
