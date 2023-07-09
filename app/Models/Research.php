@@ -12,7 +12,7 @@ class Research extends Model
 
     protected $table = "researches";
 
-    public static function slug() {
+    public static function slug(): string {
         $slug = Str::random(10);
         while(self::firstWhere("slug", $slug) !== null) {
             $slug = Str::random(10);
@@ -20,11 +20,15 @@ class Research extends Model
         return $slug;
     }
 
-    public static function findBySlug($slug) {
+    public static function findBySlug(string $slug) {
         return self::firstWhere("slug", $slug);
     }
 
     public function respondents() {
         return $this->hasMany(Respondent::class);
+    }
+
+    public function groups() {
+        return $this->hasMany(Group::class);
     }
 }

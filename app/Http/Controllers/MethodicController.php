@@ -20,7 +20,15 @@ class MethodicController extends Controller
         if($validator->fails()) return response()->json(["message" => $validator->errors()], 422);
         $data = $validator->validated();
         $id = $data["id"];
+        $data["private_name"] = $data["private_name"]===null?$data["public_name"]:$data["private_name"];
         if($id === null) {
+            $methodic = Methodic::quesry()
+            ->where("private_name", $data["private_name"])
+            ->where("user_id", $request->user->id)
+            ->first();
+            if($methodic !== null) {
+                return response()->json(["message" => "bad name"], 400);
+            }
             $methodic = new Methodic;
             $methodic->user_id = $request->user->id;
         }
@@ -32,7 +40,7 @@ class MethodicController extends Controller
         }
         $methodic->questions = json_encode($data["questions"]);
         $methodic->scales = json_encode($data["scales"]);
-        $methodic->private_name = $data["private_name"]===null?$data["public_name"]:$data["private_name"];
+        $methodic->private_name = $data["private_name"];
         $methodic->public_name = $data["public_name"];
         $methodic->instruction = $data["instruction"];
         $methodic->save();

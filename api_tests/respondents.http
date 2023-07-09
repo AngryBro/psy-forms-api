@@ -15,5 +15,8 @@ Content-Type: application/json
 Authorization: {{TOKEN}}
 
 {
-    "research_slug": "PnfW2GCnWu"
+    "research_slug": "MeVxbMdDPP",
+    "group_id": 13
 }
+###
+GET {{HOST}}.test

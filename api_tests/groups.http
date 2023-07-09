@@ -1,0 +1,53 @@
+@HOST = http://localhost/api/group
+@TOKEN = Bearer admintoken
+
+###
+GET {{HOST}}.get
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "slug": "MeVxbMdDPP"
+}
+###
+POST {{HOST}}.create
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "research_id": 1,
+    "name": "good",
+    "conditions": [
+        {
+            "methodic_private_name": "Test",
+            "scale_index": 0,
+            "operator": ">",
+            "value": 3,
+            "is_scale": true
+        }
+    ]
+}
+
+###
+POST {{HOST}}.remove
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id": 7
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
