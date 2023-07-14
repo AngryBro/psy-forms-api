@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string("slug")->unique();
             $table->boolean("published");
-            $table->foreignIdFor(App\Models\User::class);
+            $table->integer("version");
+            $table->foreignIdFor(App\Models\User::class)->nullable();
             $table->string("public_name")->nullable();
             $table->string("private_name")->nullable();
             $table->text("description")->nullable();

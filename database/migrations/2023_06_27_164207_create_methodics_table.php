@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('methodics', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\User::class);
+            $table->foreignIdFor(App\Models\User::class)->nullable();
             $table->json("questions");
             $table->json("scales");
             $table->string("public_name")->nullable();

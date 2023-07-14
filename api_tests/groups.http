@@ -7,7 +7,7 @@ Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "slug": "MeVxbMdDPP"
+    "slug": "baOMPXSOcY"
 }
 ###
 POST {{HOST}}.create

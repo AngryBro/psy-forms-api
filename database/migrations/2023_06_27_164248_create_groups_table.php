@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\Research::class);
+            $table->foreignIdFor(App\Models\Research::class)->nullable();
             $table->json("conditions");
             $table->string("name");
             $table->timestamps();

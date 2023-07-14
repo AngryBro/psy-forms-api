@@ -8,6 +8,7 @@ use App\Http\Controllers\MethodicController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\RespondentController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\StatisticController;
 
 Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
 
@@ -22,12 +23,18 @@ Route::middleware(App\Http\Middleware\Authorized::class)->group(function(){
     
     Route::post("/research.save", [ResearchController::class, "update"]);
     Route::get("/research.get", [ResearchController::class, "get"]);
+    Route::get("/research.meta", [ResearchController::class, "meta"]);
     Route::get("/research.all", [ResearchController::class, "all"]);
     Route::post("/research.remove", [ResearchController::class, "remove"]);
     Route::post("/research.publish", [ResearchController::class, "publish"]);
     Route::post("/research.unpublish", [ResearchController::class, "unpublish"]);
     
     Route::get("/respondent.get", [RespondentController::class, "get"]);
+
+    Route::get("/statistic.get", [StatisticController::class, "get"]);
+    Route::get("/statistic.criterias", [StatisticController::class, "criterias"]);
+    Route::post("/statistic.create", [StatisticController::class, "create"]);
+    Route::post("/statistic.remove", [StatisticController::class, "remove"]);
     
     Route::get("/mydata", [AuthController::class, "myData"]);
     Route::post("/logout", [AuthController::class, "logout"]);
@@ -38,7 +45,10 @@ Route::post("/password.verify", [AuthController::class, "verifyPassword"]);
 
 Route::get("/research.respondent.get", [ResearchController::class, "respondentGet"]);
 Route::post("/respondent.send", [RespondentController::class, "send"]);
+Route::get("/respondent.download", [RespondentController::class, "download"]);
 
 Route::get("/test", [TestController::class, "test"]);
 
 Route::get("/respondent.test", [RespondentController::class, "test"]);
+
+Route::any("/{any}", fn() => response()->json([], 418))->where("any", ".*");

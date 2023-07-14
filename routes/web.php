@@ -13,6 +13,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get("/static/{js_css}/{script}", fn($js_css, $script) => response()->file("../build/static/$js_css/$script"));
+Route::get('/{any}', fn() => response()->file("../build/index.html"))->where("any", ".*");

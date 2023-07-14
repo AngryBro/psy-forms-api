@@ -22,7 +22,7 @@ class MethodicController extends Controller
         $id = $data["id"];
         $data["private_name"] = $data["private_name"]===null?$data["public_name"]:$data["private_name"];
         if($id === null) {
-            $methodic = Methodic::quesry()
+            $methodic = Methodic::query()
             ->where("private_name", $data["private_name"])
             ->where("user_id", $request->user->id)
             ->first();
@@ -82,7 +82,8 @@ class MethodicController extends Controller
         if($methodic === null || $methodic->user_id !== $request->user->id) {
             return response()->json(["message" => "not owner"], 403);
         }
-        $methodic->delete();
+        $methodic->user_id = null;
+        $methodic->save();
         return response()->json(["message" => "deleted"]);
     }
 

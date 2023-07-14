@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('statistics', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\Research::class);
+            $table->foreignIdFor(App\Models\Research::class)->nullable();
             $table->foreignIdFOr(App\Models\Criteria::class);
-            $table->json("effect");
+            $table->string("effect");
             $table->json("result");
             $table->timestamps();
         });

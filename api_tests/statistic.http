@@ -1,0 +1,37 @@
+@HOST = http://localhost/api/statistic
+@TOKEN = Bearer admintoken
+
+
+###
+GET {{HOST}}.get
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "slug": "XD8x0spp23"
+}
+
+###
+POST {{HOST}}.remove
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "id" : 2
+}
+
+###
+POST {{HOST}}.create
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "slug": "XD8x0spp23",
+    "group_ids": [1,2],
+    "effect": {"group_id": 2},
+    "criteria_id": 1
+}
+
+###
+GET {{HOST}}.criterias
+Authorization: {{TOKEN}}

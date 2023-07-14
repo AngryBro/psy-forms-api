@@ -40,7 +40,8 @@ class GroupController extends Controller
         if($group === null || $group->research->user_id !== $request->user->id) {
             return response()->json(["message" => "not owner"], 403);
         }
-        $group->delete();
+        $group->research_id = null;
+        $group->save();
         return response()->json(["message" => "deleted"]);
     }
 
@@ -54,10 +55,6 @@ class GroupController extends Controller
         if($research === null || $research->user_id !== $request->user->id) {
             return response()->json(["message" => "not owner"], 403);
         }
-        // $groups = $research->groups->toArray();
-        // foreach($groups as $i => $group) {
-        //     $groups[$i]["conditions"] = json_decode($group["conditions"], true);
-        // }
         return response()->json($research->groups);
     }
 }

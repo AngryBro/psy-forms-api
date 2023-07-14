@@ -31,4 +31,8 @@ class Research extends Model
     public function groups() {
         return $this->hasMany(Group::class);
     }
+
+    public function statistics() {
+        return $this->hasMany(Statistic::class);
+    }
 }

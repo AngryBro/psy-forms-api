@@ -27,5 +27,6 @@ Content-Type: application/json
     "id":24
 }
 ###
-GET {{HOST}}/methodic.get?id=13
+GET {{HOST}}/methodic.get?id=5
 Authorization: {{TOKEN}}
+Content-Type: application/json; charset=utf-8

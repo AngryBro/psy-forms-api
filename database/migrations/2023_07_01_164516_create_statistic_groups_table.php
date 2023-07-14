@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('statistic_groups', function (Blueprint $table) {
+        Schema::create('statistic_group', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(App\Models\Statistic::class);
             $table->foreignIdFor(App\Models\Group::class);

@@ -31,7 +31,15 @@ Authorization: {{TOKEN}}
 Content-Type: application/json
 
 {
-    "slug": "PnfW2GCnWu"
+    "slug": "XD8x0spp23"
+}
+###
+GET {{HOST}}.meta
+Authorization: {{TOKEN}}
+Content-Type: application/json
+
+{
+    "slug": "XD8x0spp23"
 }
 ###
 POST {{HOST}}.unpublish
@@ -50,4 +58,4 @@ Content-Type: application/json
     "id": 13
 }
 ###
-GET {{HOST}}.respondent.get?slug=PnfW2GCnWu
+GET {{HOST}}.respondent.get?slug=J4Yi0c89L2

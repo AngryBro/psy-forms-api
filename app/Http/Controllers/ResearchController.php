@@ -8,6 +8,7 @@ use App\Models\Methodic;
 use Validator;
 use App\Enums\BLOCK_TYPE;
 use App\Models\Respondent;
+use Illuminate\Http\JsonResponse;
 
 
 class ResearchController extends Controller
@@ -18,6 +19,24 @@ class ResearchController extends Controller
         ->latest()
         ->get();
         return response()->json($researches);
+    }
+
+    public function meta(Request $request) : JsonResponse {
+        $validator = Validator::make($request->all(), [
+            "slug" => "required|string"
+        ]);
+        if($validator->fails()) return response()->json(["message" => "invalid slug"], 422);
+        $data = $validator->validated();
+        $slug = $data["slug"];
+        $user_id = $request->user->id;
+        $research = Research::query()
+        ->select("id", "private_name", "public_name", "user_id")
+        ->where("slug", $slug)
+        ->first();
+        if($research === null || $research->user_id !== $user_id) {
+            return response()->json(["message" => "not owner"], 403);
+        }
+        return response()->json($research);
     }
 
     private function methodicBlock(Methodic $methodic) : array {
@@ -77,7 +96,8 @@ class ResearchController extends Controller
         if($research === null || $research->user_id !== $request->user->id) {
             return response()->json(["message" => "not owner"], 403);
         }
-        $research->delete();
+        $research->user_id = null;
+        $research->save();
         return response()->json(["message" => "deleted"]);
     }
 
@@ -97,6 +117,7 @@ class ResearchController extends Controller
             $research->user_id = $request->user->id;
             $research->published = false;
             $research->slug = Research::slug();
+            $research->version = 1;
         }
         else {
             $research = Research::find($id);
@@ -167,6 +188,7 @@ class ResearchController extends Controller
             }
         }
         $research->published = true;
+        $research->version++;
         $research->blocks = json_encode($baked_blocks);
         $research->save();
         foreach($research->respondents as $respondent) {

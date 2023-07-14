@@ -11,6 +11,11 @@ use App\Enums\SCALE_TYPE;
 use App\Models\Research;
 use App\Models\Respondent;
 use App\Models\Group;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Storage;
+use App\Models\Token;
+use Carbon\Carbon;
 
 class RespondentController extends Controller
 {
@@ -31,7 +36,7 @@ class RespondentController extends Controller
         return $score;
     }
 
-    private function extractAnswer(array $question, $sent_answer): array {
+    private function extractAnswer(array $question, array|int|null $sent_answer): array {
         $answer = $question["answers"];
         if($question["answer_type"] === ANSWER_TYPE::ONE->value || $question["answer_type"] === ANSWER_TYPE::MANY->value) {
             $texts = [];
@@ -188,65 +193,35 @@ class RespondentController extends Controller
         return response()->json(["message" => "sent"]);
     }
 
-    private function queryGroupScale(array $answers, array $condition): bool {
-        if(!array_key_exists($condition["methodic_private_name"], $answers)
-            || !array_key_exists($condition["scale_index"], $answers[$condition["methodic_private_name"]]["scales"])) {
-            return false;
-        }
-        $score = $answers[$condition["methodic_private_name"]]["scales"][$condition["scale_index"]]["score"];
-        $value = $condition["value"];
-        switch($condition["operator"]) {
-            default: return false;
-            case ">": return $score > $value;
-            case "<": return $score < $value;
-            case ">=": return $score >= $value;
-            case "<=": return $score <= $value;
-            case "=": return $score === $value; 
-        }
-
-    }
-
-    private function queryGroupQuestion(array $answers, array $condition) : bool {
-        $methodic_name = $condition["methodic_private_name"];
-        $question_number = $condition["question_number"];
-        $answer_texts = $condition["answer_texts"];
-        return array_key_exists($methodic_name, $answers) &&
-            collect($answers[$methodic_name]["answers"])
-            ->first(fn($value) => $value["number"] === $question_number && count(array_intersect($answer_texts, $value["texts"])));
-    }
-
-    private function queryGroup(array $answers, array $conditions): bool {
-        foreach($conditions as $condition) {
-            if( ($condition["is_scale"] && !$this->queryGroupScale($answers, $condition)) ||
-                 (!$condition["is_scale"] && !$this->queryGroupQuestion($answers, $condition))) {
-                    return false;
-                 }
-        }
-        return true;
-    }
 
     private function getFilteredRespondents(Request $request, bool $download = false) {
         $validator = Validator::make($request->all(), [
-            "research_slug" => "string|required",
-            "group_id" => "required|integer"
+            "slug" => "string|required",
+            "group_id" => "required|integer",
+            "scores" => "integer|required"
         ]);
-        $data = $validator->validated();
         if($validator->fails()) return response()->json(["message" => "invalid data"], 422);
-        $research = Research::findBySlug($data["research_slug"]);
+        $data = $validator->validated();
+        $slug = $data["slug"];
+        $research = Research::findBySlug($slug);
         $group = Group::find($data["group_id"]);
         if($research === null || $research->user_id !== $request->user->id
             || ($group === null && $data["group_id"] !== "0")) {
             return response()->json(["message" => "not owner", "data" => $data], 403);
         }
-        $respondents = $research->respondents->toArray();
-        foreach($respondents as $i => $respondent) {
-            $respondents[$i]["answers"] = json_decode($respondent["answers"], true);
-        }
-        $respondents = array_values(collect($respondents)
-        ->filter(fn($respondent) => $this->queryGroup($respondent["answers"], $group===null?[]:$group->conditions))
-        ->toArray());
+        $respondents = Respondent::getFilteredArray($group, $research);
         if($download) {
-
+            $writer = $this->respondentsToExcel($respondents, (bool) $data["scores"]);
+            $path = "temp/$slug";
+            Storage::delete(Storage::files($path));
+            if(!Storage::exists($path)) {
+                Storage::makeDirectory($path);
+            }
+            $group_name = $group === null ? "" : "_$group->name";
+            $research_name = str_replace(" ", "_" ,$research->private_name);
+            $file_path = "../storage/app/$path/$research_name"."$group_name.xlsx";
+            $writer->save($file_path);
+            return response()->download($file_path);
         }
         else {
             return response()->json($respondents);
@@ -254,22 +229,54 @@ class RespondentController extends Controller
     }
 
 
-    private function respondentsToExcel(array $respondents) {
+    private function respondentsToExcel(array $respondents, bool $scores_flag = false) {
         if(count($respondents) === 0) {
             return response()->json(["message" => "not found"], 404);
         }
-        $excel = new PHPExcel;
-        $methodics = array_keys($respondents[0]);
-        foreach($methodics as $i => $methodic) {
-            $page = new PHPExcel_Worksheet($excel, $methodic);
-            $excel->addSheet($page);
-            $excel->setActiveSheetIndex($i);
-            $page = $excel->getActiveSheet();
-            $page->setCellValueByColumnAndRow(3, 5, "Тестовая надпись $methodic");
+        $excel = new Spreadsheet();
+        $methodics = array_keys($respondents[0]["answers"]);
+        foreach($methodics as $methodic) {
+
+            $array = [];
+            $temp = ["Номер", "Время ответа"];
+            foreach($respondents[0]["answers"][$methodic]["scales"] as $scale) {
+                array_push($temp, $scale["name"]);
+            }
+            foreach($respondents[0]["answers"][$methodic]["answers"] as $answer) {
+                array_push($temp, (string)$answer["number"]);
+            }
+            $columns = count($temp);
+            array_push($array, $temp);
+            foreach($respondents as $respondent) {
+                $temp  = [$respondent["number"], (new Carbon($respondent["created_at"]))->toDateTimeString()];
+                foreach($respondent["answers"][$methodic]["scales"] as $scale) {
+                    array_push($temp, $scale["score"]);
+                }
+                foreach($respondent["answers"][$methodic]["answers"] as $answer) {
+                    $texts = implode(", ", $answer["texts"]);
+                    $scores = implode(", ", $answer["scores"]);
+                    array_push($temp, $scores_flag ? $scores : $texts);
+                }
+                array_push($array, $temp);
+            }
+            $sheet = clone $excel->getSheet(0);
+            $sheet->setTitle($methodic);
+            $sheet->fromArray($array, "", "A1");
+            $excel->addSheet($sheet);
+            $excel->setActiveSheetIndexByName($methodic);
+            $styleArray = [
+                'font' => [
+                    'bold' => true,
+                ]
+            ];
+            $rangeFrom =  "A1";
+            $rangeTo = "A".str_repeat("A" , (int) ceil($columns / 26))."1";
+            $excel->getActiveSheet()->getStyle("$rangeFrom:$rangeTo")->applyFromArray($styleArray);
+            $excel->getActiveSheet()->getStyle("A1");
         }
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-        $objWriter->save("testfile.xlsx");
-        return response()->streamDownload(fn() => $objWriter, "test.xlsx");
+        $excel->removeSheetByIndex(0);
+        $excel->setActiveSheetIndex(0);
+        return new Xlsx($excel);
     }
 
     public function get(Request $request): JsonResponse {
@@ -277,8 +284,16 @@ class RespondentController extends Controller
     }
 
 
-    public function download() : JsonResponse {
-        
+    public function download(Request $request) {
+        $validator = Validator::make($request->all(), [
+            "token" => "string|required"
+        ]);
+        if($validator->fails()) return response()->json(["message" => "invalid token"], 422);
+        $token = $validator->validated()["token"];
+        $token = Token::firstWhere("token", $token);
+        if($token === null) return response()->json(["message" => "no token"]);
+        $request->user = $token->user;
+        return $this->getFilteredRespondents($request, true); 
     }
 
 }
